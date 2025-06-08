@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      MONGO_DB_URL: mongodb://mongodb:27017
+      MONGO_DB_NAME: foundlab_db
+      APP_NAME: FoundLab Backend
+      APP_VERSION: 0.1.0
+      ENVIRONMENT: production
+      DEBUG: "False"
+      SECRET_KEY: "SUA_CHAVE_SECRETA_DO_DOCKER_COMPOSE"
+    depends_on:
+      - mongodb
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:
