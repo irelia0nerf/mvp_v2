@@ -7,7 +7,7 @@ from motor.motor_asyncio import AsyncIOMotorCollection
 
 from app.database import get_collection
 from app.models.gas_monitor import (
-    GasConsumptionAnomaly,
+    GasPatternAnomaly,
     GasConsumptionRecord,
     GasMonitorAnalysisResult,
     IngestGasConsumptionInput,
@@ -59,13 +59,13 @@ class GasMonitorService:
         total_gas_consumed = fsum([r.gas_used for r in records_list])
         avg_gas_per_transaction = total_gas_consumed / len(records_list) if records_list else 0
 
-        anomalies: List[GasConsumptionAnomaly] = []
+        anomalies: List[GasPatternAnomaly] = []
         summary = f"Analysis for entity '{entity_id}' over {lookback_days} days finished. "
 
         threshold_multiplier = 4.0
         for record in records_list:
             if record.gas_used > avg_gas_per_transaction * threshold_multiplier and record.gas_used > 100_000:
-                anom = GasConsumptionAnomaly(
+                anom = GasPatternAnomaly(
                     entity_id=entity_id,
                     anomaly_type="high_gas_spike",
                     score=min(1.0, (record.gas_used / (avg_gas_per_transaction * threshold_multiplier)) - 1.0),

@@ -4,8 +4,6 @@ from app.models.nft import CreateSigilMeshNFTInput, SigilMeshNFTOutput
 from app.services.nft_service import SigilMeshService
 
 router = APIRouter()
-sigilmesh_service = SigilMeshService()
-
 
 @router.post(
     "/metadata",
@@ -26,13 +24,18 @@ async def generate_sigilmesh_nft_metadata(input_data: CreateSigilMeshNFTInput = 
     **Note:** This endpoint *generates metadata*, it does *not* mint an actual NFT on the blockchain.
     """
     try:
+        sigilmesh_service = SigilMeshService()  # ✅ Criação tardia da instância após conexão Mongo
         nft_output = await sigilmesh_service.generate_nft_metadata(
-            input_data.entity_id, input_data.score_id, input_data.custom_name, input_data.custom_description
+            input_data.entity_id,
+            input_data.score_id,
+            input_data.custom_name,
+            input_data.custom_description,
         )
         return nft_output
     except HTTPException as e:
         raise e  # Re-raise HTTPExceptions from service layer
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to generate NFT metadata: {e}"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate NFT metadata: {e}"
         )

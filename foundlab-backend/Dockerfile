@@ -12,7 +12,7 @@ WORKDIR /app
 RUN pip install poetry==1.8.2
 
 # Copy pyproject.toml and poetry.lock to the working directory
-COPY pyproject.toml poetry.lock /app/
+COPY pyproject.toml /app/
 
 # Install dependencies using Poetry
 RUN poetry config virtualenvs.create false \

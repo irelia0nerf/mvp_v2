@@ -131,6 +131,14 @@ class FlagApplicationInput(BaseModel):
         }
     }
 
+class FlagEvaluationResult(BaseModel):
+    flag_name: str
+    value: Any
+    is_active: bool
+    weight: float
+    reason: Optional[str] = None
+
+
 
 class FlagApplyResponse(BaseModel):
     """Response containing evaluated flags for a given input."""

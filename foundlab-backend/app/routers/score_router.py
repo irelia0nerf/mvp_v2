@@ -6,7 +6,6 @@ from app.models.score import ScoreInput, ScoreResult
 from app.services.score_service import ScoreLabService
 
 router = APIRouter()
-score_service = ScoreLabService()
 
 
 @router.post(
@@ -19,13 +18,8 @@ score_service = ScoreLabService()
 async def calculate_score(score_input: ScoreInput):
     """
     Calculates a new reputation score `P(x)` for a given entity.
-
-    The score is determined based on:
-    - `flags`: A list of dynamic flags, their values, and weights from the DFC engine.
-    - `metadata`: Additional contextual metadata (e.g., transaction volume, account age).
-
-    The score `P(x)` represents a probability of trustworthiness or reputational standing (0 to 1).
     """
+    score_service = ScoreLabService()
     try:
         result = await score_service.calculate_score(score_input)
         return result
@@ -45,6 +39,7 @@ async def get_score_by_id(score_id: str = Path(..., description="ID of the score
     """
     Retrieves a previously calculated reputation score by its unique ID.
     """
+    score_service = ScoreLabService()
     score = await score_service.get_score_by_id(score_id)
     if not score:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Score not found.")
@@ -59,8 +54,7 @@ async def get_score_by_id(score_id: str = Path(..., description="ID of the score
 )
 async def get_scores_by_entity(entity_id: str = Path(..., description="ID of the entity to retrieve scores for")):
     """
-    Retrieves all historical reputation scores associated with a specific entity ID,
-    ordered by most recent first.
+    Retrieves all historical reputation scores associated with a specific entity ID.
     """
-    scores = await score_service.get_scores_by_entity_id(entity_id)
-    return scores
+    score_service = ScoreLabService()
+    return await score_service.get_scores_by_entity_id(entity_id)
