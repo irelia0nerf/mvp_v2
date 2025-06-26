@@ -7,6 +7,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from datetime import datetime
 from pathlib import Path
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.common.health import router as health_router
 from app.config import settings
@@ -68,6 +69,14 @@ app = FastAPI(
     description="Backend para a infraestrutura de reputação digital FoundLab",
     debug=settings.DEBUG,
     lifespan=lifespan,
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Middleware e rotas
