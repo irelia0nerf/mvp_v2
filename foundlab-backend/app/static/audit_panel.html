@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Painel Técnico - Audit Logs</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f8f9fa;
+      padding: 2rem;
+    }
+    h1 {
+      color: #2c3e50;
+    }
+    .log-entry {
+      background: #ffffff;
+      border: 1px solid #dee2e6;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+    }
+    .log-entry code {
+      background: #f1f1f1;
+      padding: 0.2rem 0.4rem;
+      border-radius: 4px;
+    }
+    .details {
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+      color: #495057;
+    }
+    summary {
+      font-weight: 600;
+      margin-top: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>📋 Painel Técnico - Audit Logs</h1>
+
+  {% for log in logs %}
+    <div class="log-entry">
+      <div><strong>📌 Path:</strong> <code>{{ log.path }}</code></div>
+      <div><strong>🧭 Método:</strong> {{ log.method }}</div>
+      <div><strong>✅ Status:</strong> {{ log.status_code }}</div>
+      <div><strong>🕒 Timestamp:</strong> {{ log.timestamp.strftime("%d/%m/%Y %H:%M:%S") }}</div>
+      <div><strong>👻 Shadow Mode:</strong> {{ log.shadow }}</div>
+
+
+      <details>
+        <summary>📦 Headers</summary>
+        <pre>{{ log.headers | tojson(indent=2) }}</pre>
+      </details>
+
+      <details>
+        <summary>🔍 Query Params</summary>
+        <pre>{{ log.query_params | tojson(indent=2) }}</pre>
+      </details>
+    </div>
+  {% endfor %}
+</body>
+</html>
