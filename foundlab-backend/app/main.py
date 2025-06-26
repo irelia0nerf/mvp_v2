@@ -25,6 +25,10 @@ from app.routers import (
 # Middleware de autenticação + log auditoria
 class AuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
+        # Ignora o preflight
+        if request.method == "OPTIONS":
+            return await call_next(request)
+
         public_paths = ["/health", "/docs", "/redoc", "/openapi.json", "/painel", "/audit"]
         if any(request.url.path.startswith(path) for path in public_paths):
             return await call_next(request)
@@ -54,6 +58,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
             print(f"Erro ao registrar audit log: {e}")
 
         return response
+
 
 # Conexão e desconexão com o MongoDB
 @asynccontextmanager
