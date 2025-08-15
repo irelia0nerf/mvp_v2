@@ -1,18 +1,16 @@
 from typing import Any, Dict, List, Optional
 
 from fastapi import HTTPException, status
-from motor.motor_asyncio import AsyncIOMotorCollection
 from bson import ObjectId
 
-from app.database import get_collection
 from app.models.score import ScoreInput, ScoreResult
 from app.utils.score_calculator import ScoreCalculator
+from app.repositories.score_repository import ScoreRepository
 
 
 class ScoreLabService:
     def __init__(self):
-        self.scores_collection: AsyncIOMotorCollection = get_collection("scores")
-        self.score_calculator = ScoreCalculator()
+        self.score_repository = ScoreRepository()
 
     async def calculate_score(self, score_input: ScoreInput) -> ScoreResult:
         """
@@ -21,6 +19,7 @@ class ScoreLabService:
         The full list of flags provided in `score_input` (active and inactive) is stored.
         The calculated score result is stored in the database.
         """
+        self.score_calculator = ScoreCalculator() # Instantiate calculator here as needed
         active_flags = [f for f in score_input.flags if f.is_active]
 
         raw_score, probability_score = self.score_calculator.calculate_p_x(
@@ -37,10 +36,7 @@ class ScoreLabService:
             "summary": f"Reputation score for {score_input.entity_id} is {probability_score:.4f}.",
         }
 
-        insert_result = await self.scores_collection.insert_one(score_data)
-        new_score_doc = await self.scores_collection.find_one({"_id": insert_result.inserted_id})
-
-        return ScoreResult(**new_score_doc)
+        return ScoreResult(**(await self.score_repository.create(score_data)))
 
     async def get_score_by_id(self, score_id: str) -> Optional[ScoreResult]:
         """Retrieves a previously calculated score by its unique ID."""
@@ -48,14 +44,11 @@ class ScoreLabService:
             return None
 
         _id_obj = ObjectId(score_id)
-        score = await self.scores_collection.find_one({"_id": _id_obj})
+        score = await self.score_repository.get_by_id(_id_obj)
 
         return ScoreResult(**score) if score else None
 
     async def get_scores_by_entity_id(self, entity_id: str) -> List[ScoreResult]:
         """Retrieves all historical scores for a given entity, ordered by most recent first."""
-        scores = []
-        cursor = self.scores_collection.find({"entity_id": entity_id}).sort("created_at", -1)
-        async for score_doc in cursor:
-            scores.append(ScoreResult(**score_doc))
-        return scores
+        score_docs = await self.score_repository.get_by_entity_id(entity_id)
+        return [ScoreResult(**doc) for doc in score_docs]
