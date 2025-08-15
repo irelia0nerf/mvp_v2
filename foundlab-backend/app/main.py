@@ -5,9 +5,11 @@ from fastapi.openapi.utils import get_openapi
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from app.middleware.request_context_middleware import RequestContextMiddleware
 from datetime import datetime
 from pathlib import Path
 from fastapi.middleware.cors import CORSMiddleware
+from prometheus_fastapi_instrumentator import Instrumentator
 
 from app.common.health import router as health_router
 from app.config import settings
@@ -88,6 +90,9 @@ app.add_middleware(
 app.add_middleware(AuthMiddleware)
 app.include_router(health_router, prefix="", tags=["Monitoring"])
 app.include_router(score_router.router, prefix="/scores", tags=["ScoreLab"])
+
+# Configurar a instrumentação Prometheus antes de incluir os routers
+Instrumentator().instrument(app).expose(app)
 app.include_router(dfc_router.router, prefix="/flags", tags=["DFC"])
 app.include_router(sherlock_router.router, prefix="/sherlock", tags=["Sherlock"])
 app.include_router(nft_router.router, prefix="/nft", tags=["SigilMesh"])
